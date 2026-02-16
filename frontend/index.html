@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Incident Tracker</title>
+</head>
+<body>
+
+<h2>Incident Tracker</h2>
+
+<button onclick="loadIncidents()">Load Incidents</button>
+
+<ul id="list"></ul>
+
+<script>
+
+function loadIncidents(){
+
+fetch("http://127.0.0.1:8000/api/incidents?page=0&size=10")
+.then(res => res.json())
+.then(data => {
+
+    const list = document.getElementById("list");
+
+    list.innerHTML = "";
+
+    data.forEach(item => {
+
+        const li = document.createElement("li");
+
+        li.innerText =
+            item.id + " - " +
+            item.title + " - " +
+            item.status;
+
+        list.appendChild(li);
+
+    });
+
+});
+
+}
+
+</script>
+
+</body>
+</html>
