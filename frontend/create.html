@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Create Incident</title>
+
+<style>
+
+body{
+    font-family: Arial, sans-serif;
+    background-color: #f4f6f8;
+    margin: 0;
+    padding: 0;
+}
+
+.container{
+    width: 420px;
+    margin: 60px auto;
+    background: white;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+h2{
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+label{
+    display: block;
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+input, select{
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+button{
+    width: 100%;
+    margin-top: 20px;
+    padding: 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:hover{
+    background-color: #0056b3;
+}
+
+button:disabled{
+    background-color: #999;
+    cursor: not-allowed;
+}
+
+.error{
+    color: red;
+    margin-top: 10px;
+    text-align: center;
+}
+
+.success{
+    color: green;
+    margin-top: 10px;
+    text-align: center;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Create Incident</h2>
+
+<label>Title</label>
+<input id="title" placeholder="Enter incident title">
+
+<label>Service</label>
+<input id="service" placeholder="Enter service name">
+
+<label>Severity</label>
+<select id="severity">
+<option value="SEV1">SEV1</option>
+<option value="SEV2">SEV2</option>
+<option value="SEV3">SEV3</option>
+<option value="SEV4">SEV4</option>
+</select>
+
+<label>Status</label>
+<select id="status">
+<option value="OPEN">OPEN</option>
+<option value="MITIGATED">MITIGATED</option>
+<option value="RESOLVED">RESOLVED</option>
+</select>
+
+<button id="createBtn" onclick="createIncident()">Create Incident</button>
+
+<div id="message"></div>
+
+</div>
+
+<script>
+
+const API_URL = "http://127.0.0.1:8000/api/incidents";
+
+
+async function createIncident(){
+
+const title =
+document.getElementById("title").value.trim();
+
+const service =
+document.getElementById("service").value.trim();
+
+const severity =
+document.getElementById("severity").value;
+
+const status =
+document.getElementById("status").value;
+
+const message =
+document.getElementById("message");
+
+const button =
+document.getElementById("createBtn");
+
+message.innerHTML = "";
+
+
+// Validation
+if(title === "" || service === ""){
+    message.innerHTML =
+    "<div class='error'>Title and Service are required</div>";
+    return;
+}
+
+
+// Disable button
+button.disabled = true;
+button.innerText = "Creating...";
+
+
+// Request data
+const incident = {
+
+title: title,
+service: service,
+severity: severity,
+status: status,
+owner: "Admin",
+summary: "Created from UI"
+
+};
+
+
+try{
+
+const response = await fetch(API_URL, {
+
+method: "POST",
+
+headers: {
+"Content-Type": "application/json"
+},
+
+body: JSON.stringify(incident)
+
+});
+
+
+if(response.ok){
+
+message.innerHTML =
+"<div class='success'>Incident created successfully</div>";
+
+setTimeout(() => {
+
+window.location.href = "index.html";
+
+}, 1000);
+
+}else{
+
+const errorText = await response.text();
+
+message.innerHTML =
+"<div class='error'>Failed: " + errorText + "</div>";
+
+button.disabled = false;
+button.innerText = "Create Incident";
+
+}
+
+}catch(error){
+
+message.innerHTML =
+"<div class='error'>Server not running or network error</div>";
+
+button.disabled = false;
+button.innerText = "Create Incident";
+
+}
+
+}
+
+</script>
+
+</body>
+</html>

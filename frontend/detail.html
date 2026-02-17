@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Incident Detail</title>
+
+<style>
+
+body{
+    font-family: Arial, sans-serif;
+    background-color: #f4f6f8;
+    margin: 0;
+    padding: 0;
+}
+
+.container{
+    width: 400px;
+    margin: 60px auto;
+    background: white;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+}
+
+h2{
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.field{
+    margin-top: 10px;
+}
+
+.label{
+    font-weight: bold;
+    color: #333;
+}
+
+.value{
+    margin-top: 3px;
+    color: #555;
+}
+
+select{
+    width: 100%;
+    padding: 8px;
+    margin-top: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+button{
+    width: 100%;
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:hover{
+    background-color: #1e7e34;
+}
+
+.back{
+    margin-top: 10px;
+    text-align: center;
+}
+
+.back a{
+    text-decoration: none;
+    color: #007bff;
+}
+
+.back a:hover{
+    text-decoration: underline;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Incident Detail</h2>
+
+<div id="data"></div>
+
+<select id="status">
+
+<option>OPEN</option>
+<option>MITIGATED</option>
+<option>RESOLVED</option>
+
+</select>
+
+<button onclick="update()">Update Status</button>
+
+<div class="back">
+<a href="index.html">← Back to List</a>
+</div>
+
+</div>
+
+<script>
+
+const API =
+"http://127.0.0.1:8000/api/incidents";
+
+const id =
+new URLSearchParams(location.search)
+.get("id");
+
+fetch(API + "/" + id)
+
+.then(res => res.json())
+
+.then(i => {
+
+document.getElementById("data").innerHTML =
+`
+<div class="field">
+<div class="label">Title</div>
+<div class="value">${i.title}</div>
+</div>
+
+<div class="field">
+<div class="label">Service</div>
+<div class="value">${i.service}</div>
+</div>
+
+<div class="field">
+<div class="label">Severity</div>
+<div class="value">${i.severity}</div>
+</div>
+
+<div class="field">
+<div class="label">Current Status</div>
+<div class="value">${i.status}</div>
+</div>
+`;
+
+});
+
+function update(){
+
+const status =
+document.getElementById("status").value;
+
+fetch(API + "/" + id,{
+
+method:"PATCH",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body: JSON.stringify({
+status:status
+})
+
+});
+
+alert("Status Updated Successfully");
+
+location.reload();
+
+}
+
+</script>
+
+</body>
+</html>

@@ -1,13 +1,27 @@
-# Incident Tracker
+Incident Management System
 
-Backend: FastAPI
-Database: MySQL
-Frontend: HTML + JS
+Tech stack:
+- FastAPI
+- MySQL
+- SQLAlchemy
+- HTML, CSS, JS
 
-Run backend:
+Features:
+- Create Incident
+- View Incident
+- Update Incident
+- Search Incident
+- Filter Incident
+- Pagination
+- Sorting
 
-cd backend
+How to run:
+
+Backend:
 uvicorn app.main:app --reload
 
-Open:
+Frontend:
+Open index.html in browser
+
+API Docs:
 http://127.0.0.1:8000/docs

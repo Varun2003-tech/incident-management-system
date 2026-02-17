@@ -1,44 +1,325 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <title>Incident Tracker</title>
+
+<title>Incident Tracker</title>
+
+<style>
+
+body{
+    font-family: Arial, sans-serif;
+    background-color: #f4f6f8;
+    margin: 0;
+    padding: 0;
+}
+
+.container{
+    width: 90%;
+    margin: 30px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+}
+
+.header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+h2{
+    margin: 0;
+}
+
+.controls{
+    margin-top: 15px;
+}
+
+input, select{
+    padding: 8px;
+    margin-right: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+button{
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.search-btn{
+    background-color: #007bff;
+    color: white;
+}
+
+.search-btn:hover{
+    background-color: #0056b3;
+}
+
+.create-btn{
+    background-color: #28a745;
+    color: white;
+}
+
+.create-btn:hover{
+    background-color: #1e7e34;
+}
+
+.view-btn{
+    background-color: #17a2b8;
+    color: white;
+}
+
+.view-btn:hover{
+    background-color: #117a8b;
+}
+
+table{
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td{
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+th{
+    background-color: #f1f1f1;
+    cursor: pointer;
+}
+
+tr:hover{
+    background-color: #f9f9f9;
+}
+
+.pagination{
+    margin-top: 15px;
+    text-align: center;
+}
+
+.page-btn{
+    background-color: #6c757d;
+    color: white;
+}
+
+.page-btn:hover{
+    background-color: #545b62;
+}
+
+#page{
+    margin: 0 15px;
+    font-weight: bold;
+}
+
+</style>
+
 </head>
+
 <body>
+
+<div class="container">
+
+<div class="header">
 
 <h2>Incident Tracker</h2>
 
-<button onclick="loadIncidents()">Load Incidents</button>
+<button class="create-btn" onclick="openCreate()">Create Incident</button>
 
-<ul id="list"></ul>
+</div>
+
+<div class="controls">
+
+<input id="search" placeholder="Search title">
+
+<select id="severity">
+<option value="">All Severity</option>
+<option value="SEV1">SEV1</option>
+<option value="SEV2">SEV2</option>
+<option value="SEV3">SEV3</option>
+<option value="SEV4">SEV4</option>
+</select>
+
+<select id="status">
+<option value="">All Status</option>
+<option value="OPEN">OPEN</option>
+<option value="MITIGATED">MITIGATED</option>
+<option value="RESOLVED">RESOLVED</option>
+</select>
+
+<button class="search-btn" onclick="searchIncidents()">Search</button>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th onclick="sort('id')">ID</th>
+<th onclick="sort('title')">Title</th>
+<th onclick="sort('service')">Service</th>
+<th onclick="sort('severity')">Severity</th>
+<th onclick="sort('status')">Status</th>
+<th>Action</th>
+
+</tr>
+
+</thead>
+
+<tbody id="table"></tbody>
+
+</table>
+
+<div class="pagination">
+
+<button class="page-btn" onclick="prev()">Previous</button>
+
+<span id="page">Page: 0</span>
+
+<button class="page-btn" onclick="next()">Next</button>
+
+</div>
+
+</div>
 
 <script>
 
+let page = 0;
+let sort_by = "createdAt";
+let order = "desc";
+
+const API = "http://127.0.0.1:8000/api/incidents";
+
+
 function loadIncidents(){
 
-fetch("http://127.0.0.1:8000/api/incidents?page=0&size=10")
-.then(res => res.json())
-.then(data => {
+    const search =
+        document.getElementById("search").value;
 
-    const list = document.getElementById("list");
+    const severity =
+        document.getElementById("severity").value;
 
-    list.innerHTML = "";
+    const status =
+        document.getElementById("status").value;
 
-    data.forEach(item => {
+    const url =
+        `${API}?page=${page}&size=10&search=${search}&severity=${severity}&status=${status}&sort_by=${sort_by}&order=${order}`;
 
-        const li = document.createElement("li");
+    fetch(url)
 
-        li.innerText =
-            item.id + " - " +
-            item.title + " - " +
-            item.status;
+    .then(res => res.json())
 
-        list.appendChild(li);
+    .then(data => {
 
+        const table =
+            document.getElementById("table");
+
+        table.innerHTML = "";
+
+        if(data.length === 0){
+            table.innerHTML =
+                "<tr><td colspan='6'>No incidents found</td></tr>";
+            return;
+        }
+
+        data.forEach(i => {
+
+            table.innerHTML += `
+            <tr>
+                <td>${i.id}</td>
+                <td>${i.title}</td>
+                <td>${i.service}</td>
+                <td>${i.severity}</td>
+                <td>${i.status}</td>
+                <td>
+                    <button class="view-btn"
+                    onclick="view(${i.id})">
+                    View
+                    </button>
+                </td>
+            </tr>
+            `;
+
+        });
+
+        document.getElementById("page").innerText =
+            "Page: " + page;
+
+    })
+
+    .catch(err => {
+        console.error(err);
     });
 
-});
+}
+
+
+function searchIncidents(){
+
+    page = 0;
+    loadIncidents();
 
 }
+
+
+function sort(column){
+
+    sort_by = column;
+
+    order =
+        order === "asc" ? "desc" : "asc";
+
+    page = 0;
+
+    loadIncidents();
+
+}
+
+
+function next(){
+
+    page++;
+
+    loadIncidents();
+
+}
+
+
+function prev(){
+
+    if(page > 0){
+        page--;
+        loadIncidents();
+    }
+
+}
+
+
+function view(id){
+
+    window.location =
+        "detail.html?id=" + id;
+
+}
+
+
+function openCreate(){
+
+    window.location =
+        "create.html";
+
+}
+
+
+// initial load
+loadIncidents();
 
 </script>
 
